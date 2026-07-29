@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 Please confirm availability and finalize my booking!`;
 
             const encodedMsg = encodeURIComponent(message);
-            window.open(`https://wa.me/919869692026?text=${encodedMsg}`, '_blank');
+            window.open(`https://wa.me/919321192460?text=${encodedMsg}`, '_blank');
         });
     }
 
@@ -209,7 +209,7 @@ Please confirm availability and finalize my booking!`;
 Please call me back to confirm pricing and availability.`;
 
             const encodedMsg = encodeURIComponent(message);
-            window.open(`https://wa.me/919869692026?text=${encodedMsg}`, '_blank');
+            window.open(`https://wa.me/919321192460?text=${encodedMsg}`, '_blank');
         });
     }
 
@@ -233,7 +233,7 @@ Please call me back to confirm pricing and availability.`;
         const bookingBtn = document.getElementById('modalBookBtn');
         bookingBtn.onclick = () => {
             const msg = encodeURIComponent(`Hi Ashwamedh Travels, I want to book *${vehicle.name}*. Please share availability and payment details.`);
-            window.open(`https://wa.me/919869692026?text=${msg}`, '_blank');
+            window.open(`https://wa.me/919321192460?text=${msg}`, '_blank');
         };
 
         const carModal = new bootstrap.Modal(document.getElementById('carDetailModal'));
