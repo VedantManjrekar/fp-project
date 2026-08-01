@@ -261,11 +261,53 @@ Please call me back to confirm pricing and availability.`;
                 // Close mobile navbar if open
                 const navbarToggler = document.querySelector('.navbar-toggler');
                 const navbarCollapse = document.querySelector('.navbar-collapse');
-                if (navbarCollapse.classList.contains('show')) {
+                if (navbarCollapse && navbarCollapse.classList.contains('show')) {
                     navbarToggler.click();
                 }
             }
         });
     });
+
+    // Robust Tab Switching for Tariff Matrix (Fallback/Override)
+    const quickPackagesBtn = document.getElementById('quick-packages-tab');
+    const fullMatrixBtn = document.getElementById('full-matrix-tab');
+    const quickPackagesPane = document.getElementById('quick-packages');
+    const fullMatrixPane = document.getElementById('full-matrix');
+
+    if (quickPackagesBtn && fullMatrixBtn && quickPackagesPane && fullMatrixPane) {
+        quickPackagesBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            try {
+                if (typeof bootstrap !== 'undefined') {
+                    const tab = new bootstrap.Tab(quickPackagesBtn);
+                    tab.show();
+                    return;
+                }
+            } catch (err) {}
+            
+            // Manual Fallback
+            fullMatrixBtn.classList.remove('active');
+            quickPackagesBtn.classList.add('active');
+            fullMatrixPane.classList.remove('show', 'active');
+            quickPackagesPane.classList.add('show', 'active');
+        });
+        
+        fullMatrixBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            try {
+                if (typeof bootstrap !== 'undefined') {
+                    const tab = new bootstrap.Tab(fullMatrixBtn);
+                    tab.show();
+                    return;
+                }
+            } catch (err) {}
+            
+            // Manual Fallback
+            quickPackagesBtn.classList.remove('active');
+            fullMatrixBtn.classList.add('active');
+            quickPackagesPane.classList.remove('show', 'active');
+            fullMatrixPane.classList.add('show', 'active');
+        });
+    }
 
 });
