@@ -5,6 +5,92 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // --- Supabase Authentication & Location Logic ---
+    const SUPABASE_URL = 'https://kyqixnovvokzfavkfdtr.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5cWl4bm92dm9remZhdmtmZHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1OTM5NTYsImV4cCI6MjEwMTE2OTk1Nn0.yZZlQihxfT3vv0SgUi5N6glhvJLL8160XB2Gf8wkkT0';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    const authBtn = document.getElementById('authBtn');
+    const authBtnText = document.getElementById('authBtnText');
+
+    async function handleAuth() {
+        console.log("Auth button clicked!");
+        if (currentUser) {
+            await supabase.auth.signOut();
+        } else {
+            const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+            if (error) {
+                alert("Login Error: " + error.message);
+                console.error("Supabase Auth Error:", error);
+            }
+        }
+    }
+
+    if (authBtn) {
+        authBtn.addEventListener('click', handleAuth);
+    }
+
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (session) {
+            currentUser = session.user;
+            if (authBtnText) authBtnText.textContent = 'Logout';
+            
+            // Safely wait for Bootstrap to initialize
+            const checkBootstrap = setInterval(() => {
+                if (window.bootstrap) {
+                    clearInterval(checkBootstrap);
+                    const savedLocation = localStorage.getItem('userLocation');
+                    if (!savedLocation) {
+                        const locationModalEl = document.getElementById('locationModal');
+                        if (locationModalEl) {
+                            const locationModal = window.bootstrap.Modal.getOrCreateInstance(locationModalEl);
+                            locationModal.show();
+                            
+                            document.getElementById('saveLocationBtn').onclick = () => {
+                                const loc = document.getElementById('userResidence').value.trim();
+                                if (loc) {
+                                    localStorage.setItem('userLocation', loc);
+                                    locationModal.hide();
+                                    
+                                    // Failsafe to remove any stuck backdrops
+                                    setTimeout(() => {
+                                        const backdrops = document.querySelectorAll('.modal-backdrop');
+                                        backdrops.forEach(b => b.remove());
+                                        document.body.classList.remove('modal-open');
+                                        document.body.style.overflow = '';
+                                        document.body.style.paddingRight = '';
+                                    }, 300);
+                                }
+                            };
+                        }
+                    }
+                }
+            }, 100);
+        } else {
+            currentUser = null;
+            if (authBtnText) authBtnText.textContent = 'Login';
+        }
+    });
+
+    window.sendWhatsAppInquiry = function(baseMessage) {
+        let authIntro = "";
+        if (currentUser && currentUser.user_metadata && currentUser.user_metadata.full_name) {
+            const name = currentUser.user_metadata.full_name;
+            const loc = localStorage.getItem('userLocation');
+            if (loc) {
+                authIntro = `Hi! I am ${name} and I reside in ${loc}.\n\n`;
+            } else {
+                authIntro = `Hi! I am ${name}.\n\n`;
+            }
+        }
+        
+        const finalMessage = authIntro + baseMessage;
+        const encodedMsg = encodeURIComponent(finalMessage);
+        window.open(`https://wa.me/919869692026?text=${encodedMsg}`, '_blank');
+    };
+
+
     // Tariff Data Matrix (Exact rates from Image 1 & Image 2)
     const TARIFF_DATA = {
         dzire: {
@@ -174,8 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 Please confirm availability and finalize my booking!`;
 
-            const encodedMsg = encodeURIComponent(message);
-            window.open(`https://wa.me/919869692026?text=${encodedMsg}`, '_blank');
+            window.sendWhatsAppInquiry(message);
         });
     }
 
@@ -208,8 +293,7 @@ Please confirm availability and finalize my booking!`;
 ----------------------------------------
 Please call me back to confirm pricing and availability.`;
 
-            const encodedMsg = encodeURIComponent(message);
-            window.open(`https://wa.me/919869692026?text=${encodedMsg}`, '_blank');
+            window.sendWhatsAppInquiry(message);
         });
     }
 
@@ -232,11 +316,11 @@ Please call me back to confirm pricing and availability.`;
 
         const bookingBtn = document.getElementById('modalBookBtn');
         bookingBtn.onclick = () => {
-            const msg = encodeURIComponent(`Hi Ashwamedh Travels, I want to book *${vehicle.name}*. Please share availability and payment details.`);
-            window.open(`https://wa.me/919869692026?text=${msg}`, '_blank');
+            const msg = `Hi Ashwamedh Travels, I want to book *${vehicle.name}*. Please share availability and payment details.`;
+            window.sendWhatsAppInquiry(msg);
         };
 
-        const carModal = new bootstrap.Modal(document.getElementById('carDetailModal'));
+        const carModal = new window.bootstrap.Modal(document.getElementById('carDetailModal'));
         carModal.show();
     };
 
