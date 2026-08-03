@@ -395,3 +395,43 @@ Please call me back to confirm pricing and availability.`;
     }
 
 });
+
+// Global Function to Detect Precise GPS Location
+window.getCurrentLocation = function(inputId) {
+    const inputField = document.getElementById(inputId);
+    if (!inputField) return;
+
+    if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser. Please type your location manually.");
+        return;
+    }
+
+    const originalPlaceholder = inputField.placeholder;
+    inputField.value = "Fetching GPS Location...";
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const lat = position.coords.latitude.toFixed(6);
+            const lng = position.coords.longitude.toFixed(6);
+            inputField.value = `Live GPS: https://maps.google.com/?q=${lat},${lng}`;
+        },
+        (error) => {
+            inputField.value = "";
+            inputField.placeholder = originalPlaceholder;
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("Location permission denied. Please allow location access or enter your pickup address manually.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information unavailable. Please enter location manually.");
+                    break;
+                case error.TIMEOUT:
+                    alert("Location request timed out. Please try again or type manually.");
+                    break;
+                default:
+                    alert("Unable to fetch location. Please type manually.");
+            }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+};

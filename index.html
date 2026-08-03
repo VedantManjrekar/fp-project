@@ -146,7 +146,12 @@
 
                             <div class="row g-2 mb-3">
                                 <div class="col-6">
-                                    <input type="text" id="estPickup" class="form-control form-control-dark" placeholder="Pickup Area (Mumbai)">
+                                    <div class="input-group">
+                                        <input type="text" id="estPickup" class="form-control form-control-dark" placeholder="Pickup Area (Mumbai)">
+                                        <button class="btn btn-gold-outline px-2" type="button" onclick="getCurrentLocation('estPickup')" title="Detect my current location">
+                                            <i class="fa-solid fa-crosshairs text-gold"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="col-6">
                                     <input type="date" id="estDate" class="form-control form-control-dark">
@@ -824,7 +829,12 @@
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label text-gold-light small">Pickup Location</label>
-                                    <input type="text" id="enqPickup" class="form-control form-control-dark" placeholder="e.g. Parel, Bandra, Airport" required>
+                                    <div class="input-group">
+                                        <input type="text" id="enqPickup" class="form-control form-control-dark" placeholder="e.g. Parel, Bandra, Airport" required>
+                                        <button class="btn btn-gold-outline px-3" type="button" onclick="getCurrentLocation('enqPickup')" title="Detect my current location">
+                                            <i class="fa-solid fa-crosshairs text-gold me-1"></i> GPS
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label text-gold-light small">Destination / Drop</label>
