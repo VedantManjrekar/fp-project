@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             extraKm: 22,
             outstationDA: 500,
             permit: 0,
-            image: "assets/images/crysta.png",
+            image: "assets/images/crysta.jpg",
             seats: "6+1 / 7+1 Seater",
             luggage: "4 Bags"
         },
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
             extraKm: 25,
             outstationDA: 500,
             permit: 0,
-            image: "assets/images/hycross.png",
+            image: "assets/images/innova_hycross.jpg",
             seats: "6+1 / 7+1 Seater",
             luggage: "4 Bags"
         },
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
             extraKm: 55,
             outstationDA: 1000,
             permit: 1000,
-            image: "assets/images/urbania.png",
+            image: "assets/images/urbania.jpg",
             seats: "13 / 17 Seater",
             luggage: "10+ Bags"
         }
