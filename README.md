@@ -2,6 +2,11 @@
 
 A modern, responsive, high-converting single-page website built for **Ashwamedh Travel Services** (Mumbai-based car rental and airport transfer service). Featuring a luxury dark royal navy and metallic gold design system, interactive quick fare estimator, official tariff matrices, and direct WhatsApp booking integration.
 
+## 🌐 Live Demo & Tech Stack
+- **Live Demo**: [https://projecticon123.vercel.app/](https://projecticon123.vercel.app/)
+- **Hosting**: Deployed and hosted on **Vercel** for fast, reliable delivery.
+- **Authentication**: **Supabase** is integrated for secure user authentication and session management.
+
 ---
 
 ## 📋 Prerequisites & Downloads
