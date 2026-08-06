@@ -51,7 +51,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-lg-center">
                     <li class="nav-item"><a class="nav-link" href="home.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="index.html">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html">About Us</a></li>
                     <li class="nav-item"><a class="nav-link" href="packages.html">Packages</a></li>
                     <li class="nav-item"><a class="nav-link" href="routes.html">Routes</a></li>
                     <li class="nav-item"><a class="nav-link" href="home.html#services">Services</a></li>
@@ -82,28 +82,50 @@
     </nav>
 
     
-    <!-- About Us Section -->
-    <section id="about" class="py-5" style="min-height: 70vh;">
+    <!-- Customer Dashboard Section -->
+    <section id="dashboard" class="py-5" style="min-height: 70vh;">
         <div class="container py-5">
             <div class="text-center mb-5">
-                <span class="badge bg-gold text-navy-deep px-3 py-2 uppercase font-subheading mb-2">Our Story</span>
-                <h2 class="display-5 text-white">About Ashwamedh Travel Services</h2>
+                <span class="badge bg-gold text-navy-deep px-3 py-2 uppercase font-subheading mb-2">My Account</span>
+                <h2 class="display-5 text-white">Customer Dashboard</h2>
+                <p class="text-muted mt-3" id="welcomeMsg">Welcome back!</p>
             </div>
-            <div class="row align-items-center gy-5">
-                <div class="col-lg-6">
-                    <img src="assets/images/logo.jpg" alt="About Us" class="img-fluid rounded-4 shadow-lg border gold-border">
+            
+            <div id="dashboardContent" class="d-none">
+                <div class="row g-4">
+                    <div class="col-lg-4">
+                        <div class="bg-navy-card p-4 rounded-4 border gold-border h-100 shadow-lg">
+                            <h4 class="text-white font-subheading mb-3">Profile</h4>
+                            <p class="text-muted mb-1"><i class="fa-solid fa-user text-gold me-2"></i> <span id="profileName"></span></p>
+                            <p class="text-muted mb-1"><i class="fa-solid fa-envelope text-gold me-2"></i> <span id="profileEmail"></span></p>
+                            <button class="btn btn-outline-danger btn-sm mt-3 w-100" id="logoutBtnDash">Logout</button>
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <div class="bg-navy-card p-4 rounded-4 border gold-border h-100 shadow-lg">
+                            <h4 class="text-white font-subheading mb-3">My Bookings</h4>
+                            <div class="table-responsive">
+                                <table class="table table-custom text-start align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-gold">Date</th>
+                                            <th class="text-gold">Route</th>
+                                            <th class="text-gold">Vehicle</th>
+                                            <th class="text-gold">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="userBookingsList">
+                                        <!-- Bookings populated via JS -->
+                                        <tr><td colspan="4" class="text-center text-muted">Loading bookings...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-lg-6">
-                    <h3 class="text-gold font-subheading mb-3">Premium Travel Experiences in Mumbai</h3>
-                    <p class="text-muted">Welcome to Ashwamedh Travel Services, Mumbai's premier car rental and travel service provider. Established with a vision to offer luxurious, safe, and comfortable journeys, we specialize in providing top-tier chauffeur-driven vehicles.</p>
-                    <p class="text-muted">Our fleet includes the latest models of Swift Dzire, Kia Carens, Innova Crysta, Innova Hycross, and Force Urbania, meticulously maintained to ensure your utmost comfort.</p>
-                    <ul class="list-unstyled text-muted mt-4">
-                        <li class="mb-2"><i class="fa-solid fa-check text-gold me-2"></i> Professional, Background-Verified Chauffeurs</li>
-                        <li class="mb-2"><i class="fa-solid fa-check text-gold me-2"></i> 24/7 Customer Support and Booking</li>
-                        <li class="mb-2"><i class="fa-solid fa-check text-gold me-2"></i> Transparent Pricing with No Hidden Costs</li>
-                        <li class="mb-2"><i class="fa-solid fa-check text-gold me-2"></i> Punctual and Reliable Airport Transfers</li>
-                    </ul>
-                </div>
+            </div>
+            <div id="loginPrompt" class="text-center">
+                <p class="text-danger">Please login to view your dashboard.</p>
             </div>
         </div>
     </section>
@@ -141,11 +163,11 @@
                 <div class="col-lg-3 col-md-4">
                     <h5 class="footer-title">Our Fleet</h5>
                     <ul class="footer-links small">
-                        <li><a href="#fleet">Swift Dzire (4+1)</a></li>
-                        <li><a href="#fleet">Kia Carens (6+1)</a></li>
-                        <li><a href="#fleet">Innova Crysta (6+1/7+1)</a></li>
-                        <li><a href="#fleet">Innova Hycross (Hybrid)</a></li>
-                        <li><a href="#fleet">Force Urbania (13/17)</a></li>
+                        <li><a href="home.html#fleet">Swift Dzire (4+1)</a></li>
+                        <li><a href="home.html#fleet">Kia Carens (6+1)</a></li>
+                        <li><a href="home.html#fleet">Innova Crysta (6+1/7+1)</a></li>
+                        <li><a href="home.html#fleet">Innova Hycross (Hybrid)</a></li>
+                        <li><a href="home.html#fleet">Force Urbania (13/17)</a></li>
                     </ul>
                 </div>
 

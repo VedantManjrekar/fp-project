@@ -15,6 +15,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="css/style.css" rel="stylesheet">
+    <!-- FullCalendar JS -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
 </head>
 <body>
 
@@ -51,7 +53,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-lg-center">
                     <li class="nav-item"><a class="nav-link" href="home.html">Home</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="index.html">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html">About Us</a></li>
                     <li class="nav-item"><a class="nav-link" href="packages.html">Packages</a></li>
                     <li class="nav-item"><a class="nav-link" href="routes.html">Routes</a></li>
                     <li class="nav-item"><a class="nav-link" href="home.html#services">Services</a></li>
@@ -82,28 +84,45 @@
     </nav>
 
     
-    <!-- About Us Section -->
-    <section id="about" class="py-5" style="min-height: 70vh;">
+    <!-- Admin Dashboard Section -->
+    <section id="admin" class="py-5" style="min-height: 70vh;">
         <div class="container py-5">
             <div class="text-center mb-5">
-                <span class="badge bg-gold text-navy-deep px-3 py-2 uppercase font-subheading mb-2">Our Story</span>
-                <h2 class="display-5 text-white">About Ashwamedh Travel Services</h2>
+                <span class="badge bg-danger text-white px-3 py-2 uppercase font-subheading mb-2">Secured</span>
+                <h2 class="display-5 text-white">Admin Dashboard</h2>
             </div>
-            <div class="row align-items-center gy-5">
-                <div class="col-lg-6">
-                    <img src="assets/images/logo.jpg" alt="About Us" class="img-fluid rounded-4 shadow-lg border gold-border">
+            
+            <div id="adminContent" class="d-none">
+                <div class="bg-navy-card p-4 rounded-4 border border-danger h-100 shadow-lg">
+                    <h4 class="text-white font-subheading mb-3">All Bookings</h4>
+                    <div class="table-responsive">
+                        <table class="table table-custom text-start align-middle">
+                            <thead>
+                                <tr>
+                                    <th class="text-gold">ID</th>
+                                    <th class="text-gold">Customer</th>
+                                    <th class="text-gold">Route</th>
+                                    <th class="text-gold">Date</th>
+                                    <th class="text-gold">Vehicle</th>
+                                    <th class="text-gold">Status</th>
+                                    <th class="text-gold">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminBookingsList">
+                                <!-- Admin Bookings populated via JS -->
+                                <tr><td colspan="7" class="text-center text-muted">Loading bookings...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="col-lg-6">
-                    <h3 class="text-gold font-subheading mb-3">Premium Travel Experiences in Mumbai</h3>
-                    <p class="text-muted">Welcome to Ashwamedh Travel Services, Mumbai's premier car rental and travel service provider. Established with a vision to offer luxurious, safe, and comfortable journeys, we specialize in providing top-tier chauffeur-driven vehicles.</p>
-                    <p class="text-muted">Our fleet includes the latest models of Swift Dzire, Kia Carens, Innova Crysta, Innova Hycross, and Force Urbania, meticulously maintained to ensure your utmost comfort.</p>
-                    <ul class="list-unstyled text-muted mt-4">
-                        <li class="mb-2"><i class="fa-solid fa-check text-gold me-2"></i> Professional, Background-Verified Chauffeurs</li>
-                        <li class="mb-2"><i class="fa-solid fa-check text-gold me-2"></i> 24/7 Customer Support and Booking</li>
-                        <li class="mb-2"><i class="fa-solid fa-check text-gold me-2"></i> Transparent Pricing with No Hidden Costs</li>
-                        <li class="mb-2"><i class="fa-solid fa-check text-gold me-2"></i> Punctual and Reliable Airport Transfers</li>
-                    </ul>
+
+                <div class="bg-navy-card p-4 rounded-4 border border-danger shadow-lg mt-5">
+                    <h4 class="text-white font-subheading mb-3">Booking Calendar</h4>
+                    <div id="adminCalendar" style="min-height: 400px; background-color: #f8fafc; color: #1e293b; padding: 15px; border-radius: 8px;"></div>
                 </div>
+            </div>
+            <div id="adminLoginPrompt" class="text-center">
+                <p class="text-danger">Access Denied. You must be an administrator.</p>
             </div>
         </div>
     </section>
@@ -141,11 +160,11 @@
                 <div class="col-lg-3 col-md-4">
                     <h5 class="footer-title">Our Fleet</h5>
                     <ul class="footer-links small">
-                        <li><a href="#fleet">Swift Dzire (4+1)</a></li>
-                        <li><a href="#fleet">Kia Carens (6+1)</a></li>
-                        <li><a href="#fleet">Innova Crysta (6+1/7+1)</a></li>
-                        <li><a href="#fleet">Innova Hycross (Hybrid)</a></li>
-                        <li><a href="#fleet">Force Urbania (13/17)</a></li>
+                        <li><a href="home.html#fleet">Swift Dzire (4+1)</a></li>
+                        <li><a href="home.html#fleet">Kia Carens (6+1)</a></li>
+                        <li><a href="home.html#fleet">Innova Crysta (6+1/7+1)</a></li>
+                        <li><a href="home.html#fleet">Innova Hycross (Hybrid)</a></li>
+                        <li><a href="home.html#fleet">Force Urbania (13/17)</a></li>
                     </ul>
                 </div>
 
@@ -261,5 +280,6 @@
 
     <!-- Custom JS -->
     <script src="js/main.js?v=2"></script>
+    <script src="js/admin.js"></script>
 </body>
 </html>

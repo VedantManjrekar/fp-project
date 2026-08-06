@@ -14,17 +14,84 @@ document.addEventListener('DOMContentLoaded', () => {
     const authBtn = document.getElementById('authBtn');
     const authBtnText = document.getElementById('authBtnText');
 
+    let isAdmin = localStorage.getItem('isAdmin') === 'true';
+
     async function handleAuth() {
         console.log("Auth button clicked!");
-        if (currentUser) {
-            await supabase.auth.signOut();
-        } else {
-            const { data, error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
-            if (error) {
-                alert("Login Error: " + error.message);
-                console.error("Supabase Auth Error:", error);
+        if (currentUser || isAdmin) {
+            if (currentUser) await supabase.auth.signOut();
+            if (isAdmin) {
+                localStorage.removeItem('isAdmin');
+                isAdmin = false;
+                window.location.reload();
             }
+        } else {
+            // Show custom login modal
+            showLoginModal();
         }
+    }
+
+    function showLoginModal() {
+        let modalEl = document.getElementById('unifiedLoginModal');
+        if (!modalEl) {
+            const modalHtml = `
+            <div class="modal fade" id="unifiedLoginModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content modal-content-dark">
+                        <div class="modal-header modal-header-dark border-0">
+                            <h5 class="modal-title font-subheading text-gold">Choose Login Type</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body text-center py-4">
+                            <button id="btnUserLogin" class="btn btn-outline-light w-100 mb-3 d-flex justify-content-center align-items-center gap-2">
+                                <i class="fa-brands fa-google"></i> Login as User
+                            </button>
+                            <div class="text-muted small mb-3">OR</div>
+                            <div id="adminLoginForm" style="display: none;" class="text-start">
+                                <input type="text" id="adminUsername" class="form-control form-control-dark mb-2" placeholder="Admin Username">
+                                <input type="password" id="adminPassword" class="form-control form-control-dark mb-3" placeholder="Password">
+                                <button id="btnSubmitAdmin" class="btn btn-danger w-100">Login</button>
+                            </div>
+                            <button id="btnAdminLogin" class="btn btn-outline-danger w-100">
+                                <i class="fa-solid fa-shield-halved"></i> Login as Admin
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            modalEl = document.getElementById('unifiedLoginModal');
+            
+            document.getElementById('btnUserLogin').onclick = async () => {
+                const { data, error } = await supabase.auth.signInWithOAuth({ 
+                    provider: 'google',
+                    options: {
+                        redirectTo: window.location.origin
+                    }
+                });
+                if (error) alert("Login Error: " + error.message);
+            };
+
+            document.getElementById('btnAdminLogin').onclick = () => {
+                document.getElementById('btnAdminLogin').style.display = 'none';
+                document.getElementById('adminLoginForm').style.display = 'block';
+            };
+
+            document.getElementById('btnSubmitAdmin').onclick = () => {
+                const u = document.getElementById('adminUsername').value;
+                const p = document.getElementById('adminPassword').value;
+                if (u === 'admin' && p === 'admin123') {
+                    localStorage.setItem('isAdmin', 'true');
+                    isAdmin = true;
+                    window.location.reload();
+                } else {
+                    alert("Invalid Admin Credentials");
+                }
+            };
+        }
+        
+        const loginModal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
+        loginModal.show();
     }
 
     if (authBtn) {
@@ -35,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (session) {
             currentUser = session.user;
             if (authBtnText) authBtnText.textContent = 'Logout';
+            if (document.getElementById('dashboardNav')) document.getElementById('dashboardNav').classList.remove('d-none');
             
             // Safely wait for Bootstrap to initialize
             const checkBootstrap = setInterval(() => {
@@ -69,9 +137,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 100);
         } else {
             currentUser = null;
-            if (authBtnText) authBtnText.textContent = 'Login';
+            if (!isAdmin && authBtnText) authBtnText.textContent = 'Login';
+            if (document.getElementById('dashboardNav')) document.getElementById('dashboardNav').classList.add('d-none');
         }
     });
+
+    // Check on initial load if admin
+    if (isAdmin) {
+        if (authBtnText) authBtnText.textContent = 'Admin Logout';
+        if (document.getElementById('adminNav')) document.getElementById('adminNav').classList.remove('d-none');
+    }
 
     window.sendWhatsAppInquiry = function(baseMessage) {
         let authIntro = "";
@@ -435,3 +510,191 @@ window.getCurrentLocation = function(inputId) {
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
 };
+
+// --- Dashboards & Multi-Page Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Re-initialize supabase client if needed, or use the global window.supabase
+    const SUPABASE_URL = 'https://kyqixnovvokzfavkfdtr.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5cWl4bm92dm9remZhdmtmZHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1OTM5NTYsImV4cCI6MjEwMTE2OTk1Nn0.yZZlQihxfT3vv0SgUi5N6glhvJLL8160XB2Gf8wkkT0';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let authUser = null;
+
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        const dashboardNav = document.getElementById('dashboardNav');
+        const adminNav = document.getElementById('adminNav');
+
+        if (session) {
+            authUser = session.user;
+            if (dashboardNav) dashboardNav.classList.remove('d-none');
+            
+            // Basic Admin check based on email for demonstration
+            if (adminNav && (authUser.email === 'admin@ashwamedhtravel.com' || authUser.email === 'vedant@ashwamedhtravel.com')) { 
+                adminNav.classList.remove('d-none');
+            }
+
+            // Populate dashboard profile if elements exist
+            const profileName = document.getElementById('profileName');
+            const profileEmail = document.getElementById('profileEmail');
+            if (profileName) profileName.textContent = authUser.user_metadata?.full_name || 'Customer';
+            if (profileEmail) profileEmail.textContent = authUser.email;
+
+            // Load bookings if on dashboard
+            if (document.getElementById('userBookingsList')) {
+                loadUserBookings(authUser);
+            }
+            // Load admin bookings if on admin
+            if (document.getElementById('adminBookingsList')) {
+                loadAdminBookings(authUser);
+            }
+
+            // Show secure content
+            if (document.getElementById('dashboardContent')) {
+                document.getElementById('dashboardContent').classList.remove('d-none');
+                document.getElementById('loginPrompt').classList.add('d-none');
+            }
+
+            if (document.getElementById('adminContent') && (authUser.email === 'admin@ashwamedhtravel.com' || authUser.email === 'vedant@ashwamedhtravel.com')) {
+                document.getElementById('adminContent').classList.remove('d-none');
+                document.getElementById('adminLoginPrompt').classList.add('d-none');
+            }
+        } else {
+            authUser = null;
+            if (dashboardNav) dashboardNav.classList.add('d-none');
+            if (adminNav) adminNav.classList.add('d-none');
+
+            // Hide secure content
+            if (document.getElementById('dashboardContent')) {
+                document.getElementById('dashboardContent').classList.add('d-none');
+                document.getElementById('loginPrompt').classList.remove('d-none');
+            }
+            
+            if (document.getElementById('adminContent')) {
+                document.getElementById('adminContent').classList.add('d-none');
+                document.getElementById('adminLoginPrompt').classList.remove('d-none');
+            }
+        }
+    });
+
+    const logoutBtnDash = document.getElementById('logoutBtnDash');
+    if (logoutBtnDash) {
+        logoutBtnDash.addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'index.html';
+        });
+    }
+
+    async function loadUserBookings(user) {
+        const list = document.getElementById('userBookingsList');
+        if (!list) return;
+
+        const { data, error } = await supabaseClient
+            .from('bookings')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+        if (error || !data || data.length === 0) {
+            list.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No bookings found or bookings table missing.</td></tr>';
+            return;
+        }
+
+        list.innerHTML = '';
+        data.forEach(booking => {
+            list.innerHTML += `
+                <tr>
+                    <td class="text-white">${booking.travel_date}</td>
+                    <td class="text-muted">${booking.pickup_location} ➔ ${booking.drop_location}</td>
+                    <td class="text-white">${booking.vehicle_preferred}</td>
+                    <td><span class="badge ${booking.status === 'Confirmed' ? 'bg-success' : 'bg-warning text-dark'}">${booking.status || 'Pending'}</span></td>
+                </tr>
+            `;
+        });
+    }
+
+    async function loadAdminBookings(user) {
+        const list = document.getElementById('adminBookingsList');
+        if (!list) return;
+
+        const { data, error } = await supabaseClient
+            .from('bookings')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error || !data || data.length === 0) {
+            list.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No bookings found or table missing.</td></tr>';
+            return;
+        }
+
+        list.innerHTML = '';
+        data.forEach(booking => {
+            list.innerHTML += `
+                <tr>
+                    <td class="text-muted small">#${booking.id}</td>
+                    <td class="text-white">${booking.customer_name}<br><small class="text-muted">${booking.phone}</small></td>
+                    <td class="text-muted">${booking.pickup_location} ➔ ${booking.drop_location}</td>
+                    <td class="text-white">${booking.travel_date} <small class="text-muted">${booking.travel_time}</small></td>
+                    <td class="text-white">${booking.vehicle_preferred}</td>
+                    <td><span class="badge ${booking.status === 'Confirmed' ? 'bg-success' : 'bg-warning text-dark'}">${booking.status || 'Pending'}</span></td>
+                    <td><button class="btn btn-outline-gold btn-sm" onclick="confirmBooking(${booking.id})">Confirm</button></td>
+                </tr>
+            `;
+        });
+    }
+
+    window.confirmBooking = async function(id) {
+        if (!confirm('Mark booking as confirmed?')) return;
+        const { error } = await supabaseClient.from('bookings').update({ status: 'Confirmed' }).eq('id', id);
+        if (!error) {
+            alert('Booking Confirmed!');
+            const list = document.getElementById('adminBookingsList');
+            if (list && authUser) loadAdminBookings(authUser);
+        } else {
+            alert('Error updating booking: ' + error.message);
+        }
+    };
+
+    // Booking Form Submission Logic
+    const bookingForm = document.getElementById('bookingForm');
+    if (bookingForm) {
+        bookingForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('bookName').value.trim();
+            const phone = document.getElementById('bookPhone').value.trim();
+            const pickup = document.getElementById('bookPickup').value.trim();
+            const drop = document.getElementById('bookDrop').value.trim();
+            const date = document.getElementById('bookDate').value;
+            const time = document.getElementById('bookTime').value;
+            const vehicle = document.getElementById('bookVehicle').value;
+
+            if (!name || !phone || !pickup || !drop || !date || !time) {
+                alert("Please fill all required fields.");
+                return;
+            }
+
+            const newBooking = {
+                id: 'BKG-' + Math.floor(Math.random() * 10000),
+                name,
+                phone,
+                pickup,
+                drop,
+                date,
+                time,
+                vehicle,
+                status: 'Pending',
+                cost: null,
+                timestamp: new Date().toISOString()
+            };
+
+            let bookings = JSON.parse(localStorage.getItem('ashwamedh_bookings') || '[]');
+            bookings.push(newBooking);
+            localStorage.setItem('ashwamedh_bookings', JSON.stringify(bookings));
+
+            bookingForm.style.display = 'none';
+            const statusDiv = document.getElementById('bookingStatus');
+            statusDiv.classList.remove('d-none');
+            statusDiv.innerHTML = `<div class="alert alert-success"><i class="fa-solid fa-circle-check fa-2x mb-2"></i><br><strong>Booking Done!</strong><br>Your booking request has been sent to the admin. Waiting for admin approval.</div>`;
+        });
+    }
+
+});
