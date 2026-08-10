@@ -98,7 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
     supabase.auth.onAuthStateChange((event, session) => {
         if (session) {
             currentUser = session.user;
-            isAdmin = (currentUser.email === 'tanmaymotukuri05@gmail.com');
+            const adminEmails = ['tanmaymotukuri05@gmail.com', 'mjmanjrekarvedant@gmail.com'];
+            isAdmin = adminEmails.includes(currentUser.email);
             
             toggleAdminNavItems(isAdmin);
             
@@ -549,8 +550,8 @@ document.addEventListener('DOMContentLoaded', () => {
             authUser = session.user;
             if (dashboardNav) dashboardNav.classList.remove('d-none');
             
-            // Basic Admin check based on email for demonstration
-            if (authUser.email === 'tanmaymotukuri05@gmail.com') { 
+            const adminEmails = ['tanmaymotukuri05@gmail.com', 'mjmanjrekarvedant@gmail.com'];
+            if (adminEmails.includes(authUser.email)) { 
                 if (adminNav) adminNav.classList.remove('d-none');
                 
                 // Hide 'My Bookings' on the user dashboard if admin
@@ -578,7 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('loginPrompt').classList.add('d-none');
             }
 
-            if (document.getElementById('adminContent') && authUser.email === 'tanmaymotukuri05@gmail.com') {
+            if (document.getElementById('adminContent') && adminEmails.includes(authUser.email)) {
                 document.getElementById('adminContent').classList.remove('d-none');
                 document.getElementById('adminLoginPrompt').classList.add('d-none');
             }
