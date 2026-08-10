@@ -640,7 +640,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td class="text-white">${booking.vehicle}</td>
                     <td>
                         <span class="badge ${booking.status && booking.status.startsWith('Approved') ? 'bg-success' : (booking.status === 'Denied' ? 'bg-danger' : 'bg-warning text-dark')}">${booking.status || 'Pending'}</span>
-                        ${booking.cost ? `<div class="small text-gold mt-1">₹${booking.cost}</div>` : ''}
+                        ${booking.cost ? `<div class="small text-gold mt-1 fw-bold">Cost: ₹${booking.cost}</div>` : ''}
+                        ${booking.status && booking.status.startsWith('Approved') ? `
+                            <button class="btn btn-sm btn-gold w-100 mt-2" onclick="showPaymentModal()">Pay Now</button>
+                        ` : ''}
                     </td>
                 </tr>
             `;
@@ -648,6 +651,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+
+    window.showPaymentModal = function() {
+        if (typeof bootstrap !== 'undefined') {
+            const modalEl = document.getElementById('paymentModal');
+            if (modalEl) {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.show();
+            }
+        }
+    };
 
     // Booking Form Submission Logic
     const bookingForm = document.getElementById('bookingForm');

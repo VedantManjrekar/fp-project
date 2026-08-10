@@ -54,7 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${!b.status || b.status === 'Pending' ? `
                         <button class="btn btn-sm btn-success mb-1 w-100" onclick="approveBooking('${b.id}')"><i class="fa-solid fa-check"></i> Approve</button>
                         <button class="btn btn-sm btn-danger w-100" onclick="denyBooking('${b.id}')"><i class="fa-solid fa-xmark"></i> Deny</button>
-                    ` : `<button class="btn btn-sm btn-outline-secondary w-100" disabled>Processed</button>`}
+                    ` : `<button class="btn btn-sm btn-outline-secondary w-100 mb-1" disabled>Processed</button>
+                         <button class="btn btn-sm btn-gold w-100" onclick="window.showPaymentModal()">Pay Now</button>`}
                 </td>
             `;
             tbody.appendChild(tr);
