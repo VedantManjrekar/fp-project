@@ -63,8 +63,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (error) alert("Login Error: " + error.message);
             };
 
-            document.getElementById('btnUserLogin').onclick = () => handleGoogleLogin('http://localhost:53827');
-            document.getElementById('btnAdminLogin').onclick = () => handleGoogleLogin('http://localhost:3000');
+            // Login Handlers
+            if (typeof supabase !== 'undefined') {
+                document.getElementById('btnUserLogin').onclick = () => handleGoogleLogin(window.location.origin + '/dashboard.html');
+                document.getElementById('btnAdminLogin').onclick = () => handleGoogleLogin(window.location.origin + '/admin.html');
+            }
         }
         
         const loginModal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
