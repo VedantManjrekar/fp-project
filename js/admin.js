@@ -4,28 +4,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.getElementById('adminBookingsList');
     const calendarEl = document.getElementById('adminCalendar');
 
+    const SUPABASE_URL = 'https://kyqixnovvokzfavkfdtr.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5cWl4bm92dm9remZhdmtmZHRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1OTM5NTYsImV4cCI6MjEwMTE2OTk1Nn0.yZZlQihxfT3vv0SgUi5N6glhvJLL8160XB2Gf8wkkT0';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     let calendar;
+    let globalBookings = [];
 
-    function loadBookings() {
-        const bookings = JSON.parse(localStorage.getItem('ashwamedh_bookings') || '[]');
-        return bookings;
+    async function loadBookings() {
+        const { data, error } = await supabaseClient.from('bookings').select('*').order('id', { ascending: false });
+        if (error) {
+            console.error("Error fetching bookings:", error);
+            return [];
+        }
+        return data || [];
     }
 
-    function saveBookings(bookings) {
-        localStorage.setItem('ashwamedh_bookings', JSON.stringify(bookings));
-    }
-
-    function renderTable() {
+    async function renderTable() {
         if (!tbody) return;
-        const bookings = loadBookings();
+        globalBookings = await loadBookings();
         tbody.innerHTML = '';
 
-        if (bookings.length === 0) {
+        if (globalBookings.length === 0) {
             tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No bookings found.</td></tr>`;
             return;
         }
 
-        bookings.reverse().forEach(b => {
+        globalBookings.forEach(b => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="text-white fw-bold">${b.id}</td>
@@ -40,13 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td class="text-white">${b.date}<br><span class="small text-muted">${b.time}</span></td>
                 <td class="text-gold">${b.vehicle}</td>
                 <td>
-                    <span class="badge ${b.status.startsWith('Approved') ? 'bg-success' : (b.status === 'Denied' ? 'bg-danger' : 'bg-warning text-dark')}">
-                        ${b.status}
+                    <span class="badge ${b.status && b.status.startsWith('Approved') ? 'bg-success' : (b.status === 'Denied' ? 'bg-danger' : 'bg-warning text-dark')}">
+                        ${b.status || 'Pending'}
                     </span>
-                    ${b.cost ? `<div class="small text-gold mt-1">Cost: ${b.cost}</div>` : ''}
+                    ${b.cost ? `<div class="small text-gold mt-1">Cost: ₹${b.cost}</div>` : ''}
                 </td>
                 <td>
-                    ${b.status === 'Pending' ? `
+                    ${!b.status || b.status === 'Pending' ? `
                         <button class="btn btn-sm btn-success mb-1 w-100" onclick="approveBooking('${b.id}')"><i class="fa-solid fa-check"></i> Approve</button>
                         <button class="btn btn-sm btn-danger w-100" onclick="denyBooking('${b.id}')"><i class="fa-solid fa-xmark"></i> Deny</button>
                     ` : `<button class="btn btn-sm btn-outline-secondary w-100" disabled>Processed</button>`}
@@ -56,41 +61,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    window.approveBooking = function(id) {
-        const cost = prompt("Enter the confirmed cost for this booking (e.g. ₹2000):");
-        if (cost === null) return; // cancelled
+    window.approveBooking = async function(id) {
+        const cost = prompt("Enter the confirmed cost for this booking (e.g. 2000):");
+        if (cost === null) return; 
         
-        let bookings = loadBookings();
-        let b = bookings.find(x => x.id === id);
-        if (b) {
-            b.status = 'Approved';
-            b.cost = cost;
-            saveBookings(bookings);
-            renderTable();
-            renderCalendar();
+        const { error } = await supabaseClient.from('bookings').update({ status: 'Approved', cost }).eq('id', id);
+        if (error) {
+            alert("Error approving: " + error.message);
         }
     };
 
-    window.denyBooking = function(id) {
+    window.denyBooking = async function(id) {
         if (!confirm("Are you sure you want to deny this booking?")) return;
         
-        let bookings = loadBookings();
-        let b = bookings.find(x => x.id === id);
-        if (b) {
-            b.status = 'Denied';
-            saveBookings(bookings);
-            renderTable();
-            renderCalendar();
+        const { error } = await supabaseClient.from('bookings').update({ status: 'Denied' }).eq('id', id);
+        if (error) {
+            alert("Error denying: " + error.message);
         }
     };
 
     function renderCalendar() {
         if (!calendarEl || typeof FullCalendar === 'undefined') return;
         
-        const bookings = loadBookings();
-        const events = bookings.filter(b => b.status.startsWith('Approved')).map(b => {
+        const events = globalBookings.filter(b => b.status && b.status.startsWith('Approved')).map(b => {
             return {
-                title: `${b.vehicle} - ${b.name} (${b.cost})`,
+                title: `${b.vehicle} - ${b.name} (${b.cost ? '₹'+b.cost : ''})`,
                 start: `${b.date}T${b.time}`,
                 allDay: false,
                 color: '#d4af37' // gold
@@ -115,17 +110,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Subscribe to Supabase auth to show/hide admin content dynamically
-    if (window.supabase) {
-        window.supabase.auth.onAuthStateChange((event, session) => {
-            if (session && session.user.email === 'tanmaymotukuri05@gmail.com') {
-                if (adminContent) adminContent.classList.remove('d-none');
-                if (adminLoginPrompt) adminLoginPrompt.classList.add('d-none');
-                renderTable();
-                setTimeout(renderCalendar, 100);
-            } else {
-                if (adminContent) adminContent.classList.add('d-none');
-                if (adminLoginPrompt) adminLoginPrompt.classList.remove('d-none');
-            }
-        });
-    }
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (session && session.user.email === 'tanmaymotukuri05@gmail.com') {
+            if (adminContent) adminContent.classList.remove('d-none');
+            if (adminLoginPrompt) adminLoginPrompt.classList.add('d-none');
+            
+            // Render initial data
+            renderTable().then(() => renderCalendar());
+            
+            // Subscribe to real-time changes
+            supabaseClient
+                .channel('admin_bookings')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
+                    renderTable().then(() => renderCalendar());
+                })
+                .subscribe();
+
+        } else {
+            if (adminContent) adminContent.classList.add('d-none');
+            if (adminLoginPrompt) adminLoginPrompt.classList.remove('d-none');
+        }
+    });
 });

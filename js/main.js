@@ -587,10 +587,10 @@ document.addEventListener('DOMContentLoaded', () => {
             .from('bookings')
             .select('*')
             .eq('user_id', user.id)
-            .order('created_at', { ascending: false });
+            .order('id', { ascending: false });
 
         if (error || !data || data.length === 0) {
-            list.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No bookings found or bookings table missing.</td></tr>';
+            list.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No bookings found yet.</td></tr>';
             return;
         }
 
@@ -598,10 +598,13 @@ document.addEventListener('DOMContentLoaded', () => {
         data.forEach(booking => {
             list.innerHTML += `
                 <tr>
-                    <td class="text-white">${booking.travel_date}</td>
-                    <td class="text-muted">${booking.pickup_location} ➔ ${booking.drop_location}</td>
-                    <td class="text-white">${booking.vehicle_preferred}</td>
-                    <td><span class="badge ${booking.status === 'Confirmed' ? 'bg-success' : 'bg-warning text-dark'}">${booking.status || 'Pending'}</span></td>
+                    <td class="text-white">${booking.date} <br><small class="text-muted">${booking.time}</small></td>
+                    <td class="text-muted">${booking.pickup} ➔ ${booking.drop}</td>
+                    <td class="text-white">${booking.vehicle}</td>
+                    <td>
+                        <span class="badge ${booking.status && booking.status.startsWith('Approved') ? 'bg-success' : (booking.status === 'Denied' ? 'bg-danger' : 'bg-warning text-dark')}">${booking.status || 'Pending'}</span>
+                        ${booking.cost ? `<div class="small text-gold mt-1">₹${booking.cost}</div>` : ''}
+                    </td>
                 </tr>
             `;
         });
@@ -612,7 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Booking Form Submission Logic
     const bookingForm = document.getElementById('bookingForm');
     if (bookingForm) {
-        bookingForm.addEventListener('submit', (e) => {
+        bookingForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('bookName').value.trim();
             const phone = document.getElementById('bookPhone').value.trim();
@@ -628,7 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const newBooking = {
-                id: 'BKG-' + Math.floor(Math.random() * 10000),
+                user_id: authUser ? authUser.id : null,
                 name,
                 phone,
                 pickup,
@@ -637,13 +640,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 time,
                 vehicle,
                 status: 'Pending',
-                cost: null,
-                timestamp: new Date().toISOString()
+                cost: ''
             };
 
-            let bookings = JSON.parse(localStorage.getItem('ashwamedh_bookings') || '[]');
-            bookings.push(newBooking);
-            localStorage.setItem('ashwamedh_bookings', JSON.stringify(bookings));
+            const { data, error } = await supabaseClient.from('bookings').insert([newBooking]);
+
+            if (error) {
+                alert("Error saving booking: " + error.message);
+                return;
+            }
 
             bookingForm.style.display = 'none';
             const statusDiv = document.getElementById('bookingStatus');
