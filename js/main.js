@@ -14,17 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const authBtn = document.getElementById('authBtn');
     const authBtnText = document.getElementById('authBtnText');
 
-    let isAdmin = localStorage.getItem('isAdmin') === 'true';
+    let isAdmin = false;
 
     async function handleAuth() {
         console.log("Auth button clicked!");
-        if (currentUser || isAdmin) {
-            if (currentUser) await supabase.auth.signOut();
-            if (isAdmin) {
-                localStorage.removeItem('isAdmin');
-                isAdmin = false;
-                window.location.reload();
-            }
+        if (currentUser) {
+            await supabase.auth.signOut();
+            window.location.reload();
         } else {
             // Show custom login modal
             showLoginModal();
@@ -47,13 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <i class="fa-brands fa-google"></i> Login as User
                             </button>
                             <div class="text-muted small mb-3">OR</div>
-                            <div id="adminLoginForm" style="display: none;" class="text-start">
-                                <input type="text" id="adminUsername" class="form-control form-control-dark mb-2" placeholder="Admin Username">
-                                <input type="password" id="adminPassword" class="form-control form-control-dark mb-3" placeholder="Password">
-                                <button id="btnSubmitAdmin" class="btn btn-danger w-100">Login</button>
-                            </div>
-                            <button id="btnAdminLogin" class="btn btn-outline-danger w-100">
-                                <i class="fa-solid fa-shield-halved"></i> Login as Admin
+                            <button id="btnAdminLogin" class="btn btn-outline-danger w-100 d-flex justify-content-center align-items-center gap-2">
+                                <i class="fa-brands fa-google"></i> Login as Admin
                             </button>
                         </div>
                     </div>
@@ -62,32 +53,18 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.insertAdjacentHTML('beforeend', modalHtml);
             modalEl = document.getElementById('unifiedLoginModal');
             
-            document.getElementById('btnUserLogin').onclick = async () => {
+            const handleGoogleLogin = async (redirectUrl) => {
                 const { data, error } = await supabase.auth.signInWithOAuth({ 
                     provider: 'google',
                     options: {
-                        redirectTo: window.location.origin
+                        redirectTo: redirectUrl
                     }
                 });
                 if (error) alert("Login Error: " + error.message);
             };
 
-            document.getElementById('btnAdminLogin').onclick = () => {
-                document.getElementById('btnAdminLogin').style.display = 'none';
-                document.getElementById('adminLoginForm').style.display = 'block';
-            };
-
-            document.getElementById('btnSubmitAdmin').onclick = () => {
-                const u = document.getElementById('adminUsername').value;
-                const p = document.getElementById('adminPassword').value;
-                if (u === 'admin' && p === 'admin123') {
-                    localStorage.setItem('isAdmin', 'true');
-                    isAdmin = true;
-                    window.location.reload();
-                } else {
-                    alert("Invalid Admin Credentials");
-                }
-            };
+            document.getElementById('btnUserLogin').onclick = () => handleGoogleLogin('http://localhost:52793');
+            document.getElementById('btnAdminLogin').onclick = () => handleGoogleLogin('http://localhost:3000');
         }
         
         const loginModal = window.bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -98,11 +75,33 @@ document.addEventListener('DOMContentLoaded', () => {
         authBtn.addEventListener('click', handleAuth);
     }
 
+    function toggleAdminNavItems(isAdminUser) {
+        const routeLinks = document.querySelectorAll('a[href="routes.html"]');
+        const enquiryLinks = document.querySelectorAll('a[href="enquiry.html"]');
+        const bookLinks = document.querySelectorAll('a[href="book.html"]');
+        
+        [...routeLinks, ...enquiryLinks, ...bookLinks].forEach(el => {
+            const navItem = el.closest('.nav-item');
+            if (navItem) {
+                if (isAdminUser) {
+                    navItem.classList.add('d-none');
+                } else {
+                    navItem.classList.remove('d-none');
+                }
+            }
+        });
+    }
+
     supabase.auth.onAuthStateChange((event, session) => {
         if (session) {
             currentUser = session.user;
+            isAdmin = (currentUser.email === 'tanmaymotukuri05@gmail.com');
+            
+            toggleAdminNavItems(isAdmin);
+            
             if (authBtnText) authBtnText.textContent = 'Logout';
             if (document.getElementById('dashboardNav')) document.getElementById('dashboardNav').classList.remove('d-none');
+            if (isAdmin && document.getElementById('adminNav')) document.getElementById('adminNav').classList.remove('d-none');
             
             // Safely wait for Bootstrap to initialize
             const checkBootstrap = setInterval(() => {
@@ -137,16 +136,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 100);
         } else {
             currentUser = null;
-            if (!isAdmin && authBtnText) authBtnText.textContent = 'Login';
+            isAdmin = false;
+            
+            toggleAdminNavItems(false);
+            
+            if (authBtnText) authBtnText.textContent = 'Login';
             if (document.getElementById('dashboardNav')) document.getElementById('dashboardNav').classList.add('d-none');
+            if (document.getElementById('adminNav')) document.getElementById('adminNav').classList.add('d-none');
         }
     });
-
-    // Check on initial load if admin
-    if (isAdmin) {
-        if (authBtnText) authBtnText.textContent = 'Admin Logout';
-        if (document.getElementById('adminNav')) document.getElementById('adminNav').classList.remove('d-none');
-    }
 
     window.sendWhatsAppInquiry = function(baseMessage) {
         let authIntro = "";
@@ -529,7 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dashboardNav) dashboardNav.classList.remove('d-none');
             
             // Basic Admin check based on email for demonstration
-            if (adminNav && (authUser.email === 'admin@ashwamedhtravel.com' || authUser.email === 'vedant@ashwamedhtravel.com')) { 
+            if (adminNav && authUser.email === 'tanmaymotukuri05@gmail.com') { 
                 adminNav.classList.remove('d-none');
             }
 
@@ -554,7 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('loginPrompt').classList.add('d-none');
             }
 
-            if (document.getElementById('adminContent') && (authUser.email === 'admin@ashwamedhtravel.com' || authUser.email === 'vedant@ashwamedhtravel.com')) {
+            if (document.getElementById('adminContent') && authUser.email === 'tanmaymotukuri05@gmail.com') {
                 document.getElementById('adminContent').classList.remove('d-none');
                 document.getElementById('adminLoginPrompt').classList.add('d-none');
             }
