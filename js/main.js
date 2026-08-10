@@ -483,10 +483,30 @@ window.getCurrentLocation = function(inputId) {
     inputField.value = "Fetching GPS Location...";
 
     navigator.geolocation.getCurrentPosition(
-        (position) => {
-            const lat = position.coords.latitude.toFixed(6);
-            const lng = position.coords.longitude.toFixed(6);
-            inputField.value = `Live GPS: https://maps.google.com/?q=${lat},${lng}`;
+        async (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            try {
+                // Convert coordinates to real address
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+                const data = await response.json();
+                
+                if (data && data.display_name) {
+                    let shortAddress = [];
+                    if (data.address.suburb || data.address.neighbourhood) shortAddress.push(data.address.suburb || data.address.neighbourhood);
+                    if (data.address.city || data.address.town || data.address.county) shortAddress.push(data.address.city || data.address.town || data.address.county);
+                    
+                    inputField.value = shortAddress.length > 0 ? shortAddress.join(", ") : data.display_name.split(",").slice(0, 3).join(", ");
+                } else {
+                    // Fallback if API fails to find a name
+                    inputField.value = `Live GPS: https://maps.google.com/?q=${lat.toFixed(6)},${lng.toFixed(6)}`;
+                }
+            } catch (err) {
+                console.error("Geocoding error:", err);
+                // Fallback on network error
+                inputField.value = `Live GPS: https://maps.google.com/?q=${lat.toFixed(6)},${lng.toFixed(6)}`;
+            }
         },
         (error) => {
             inputField.value = "";
@@ -527,8 +547,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (dashboardNav) dashboardNav.classList.remove('d-none');
             
             // Basic Admin check based on email for demonstration
-            if (adminNav && authUser.email === 'tanmaymotukuri05@gmail.com') { 
-                adminNav.classList.remove('d-none');
+            if (authUser.email === 'tanmaymotukuri05@gmail.com') { 
+                if (adminNav) adminNav.classList.remove('d-none');
+                
+                // Hide 'My Bookings' on the user dashboard if admin
+                const userBookingsContainer = document.getElementById('userBookingsContainer');
+                if (userBookingsContainer) {
+                    userBookingsContainer.classList.add('d-none');
+                }
             }
 
             // Populate dashboard profile if elements exist
@@ -599,7 +625,11 @@ document.addEventListener('DOMContentLoaded', () => {
             list.innerHTML += `
                 <tr>
                     <td class="text-white">${booking.date} <br><small class="text-muted">${booking.time}</small></td>
-                    <td class="text-muted">${booking.pickup} ➔ ${booking.drop}</td>
+                    <td class="text-muted">
+                        ${booking.pickup && booking.pickup.startsWith('Live GPS:') ? `<a href="${booking.pickup.replace('Live GPS:', '').trim()}" target="_blank" class="btn btn-sm btn-gold-outline py-0 px-2 mt-1"><i class="fa-solid fa-location-dot"></i> Live Location</a>` : booking.pickup} 
+                        <br>➔<br> 
+                        ${booking.drop && booking.drop.startsWith('Live GPS:') ? `<a href="${booking.drop.replace('Live GPS:', '').trim()}" target="_blank" class="btn btn-sm btn-gold-outline py-0 px-2 mt-1"><i class="fa-solid fa-location-dot"></i> Live Location</a>` : booking.drop}
+                    </td>
                     <td class="text-white">${booking.vehicle}</td>
                     <td>
                         <span class="badge ${booking.status && booking.status.startsWith('Approved') ? 'bg-success' : (booking.status === 'Denied' ? 'bg-danger' : 'bg-warning text-dark')}">${booking.status || 'Pending'}</span>
@@ -657,4 +687,87 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+});
+
+// --- Leaflet Map Picker Logic ---
+let mapInstance = null;
+let mapMarker = null;
+let currentMapInputId = null;
+let currentSelectedAddress = "";
+
+window.openMapPicker = function(inputId) {
+    currentMapInputId = inputId;
+    const modalEl = document.getElementById('mapPickerModal');
+    if (!modalEl) return;
+    
+    const mapModal = new bootstrap.Modal(modalEl);
+    document.getElementById('mapAddressPreview').innerText = "Click on the map to drop a pin.";
+    document.getElementById('confirmMapLocationBtn').disabled = true;
+    currentSelectedAddress = "";
+    
+    mapModal.show();
+
+    // Initialize map after modal transition is done so Leaflet calculates size correctly
+    modalEl.addEventListener('shown.bs.modal', function onModalShown() {
+        modalEl.removeEventListener('shown.bs.modal', onModalShown); // Run once
+
+        if (!mapInstance) {
+            // Default center to Mumbai
+            mapInstance = L.map('mapContainer').setView([19.0760, 72.8777], 11);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(mapInstance);
+
+            mapInstance.on('click', async function(e) {
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+                
+                if (mapMarker) {
+                    mapMarker.setLatLng(e.latlng);
+                } else {
+                    mapMarker = L.marker(e.latlng).addTo(mapInstance);
+                }
+
+                document.getElementById('mapAddressPreview').innerText = "Fetching address...";
+                document.getElementById('confirmMapLocationBtn').disabled = true;
+
+                try {
+                    // Reverse Geocoding with Nominatim API
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`);
+                    const data = await response.json();
+                    
+                    if (data && data.display_name) {
+                        // Create a shorter address (e.g., Neighborhood, City)
+                        let shortAddress = [];
+                        if (data.address.suburb || data.address.neighbourhood) shortAddress.push(data.address.suburb || data.address.neighbourhood);
+                        if (data.address.city || data.address.town || data.address.county) shortAddress.push(data.address.city || data.address.town || data.address.county);
+                        
+                        currentSelectedAddress = shortAddress.length > 0 ? shortAddress.join(", ") : data.display_name.split(",").slice(0, 3).join(", ");
+                        
+                        document.getElementById('mapAddressPreview').innerText = currentSelectedAddress;
+                        document.getElementById('confirmMapLocationBtn').disabled = false;
+                    } else {
+                        document.getElementById('mapAddressPreview').innerText = "Could not detect address here. Try another spot.";
+                    }
+                } catch (err) {
+                    console.error(err);
+                    document.getElementById('mapAddressPreview').innerText = "Error fetching address. Please try again.";
+                }
+            });
+        }
+        // Force Leaflet to recalculate size inside the new modal display
+        mapInstance.invalidateSize();
+    });
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const confirmBtn = document.getElementById('confirmMapLocationBtn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', () => {
+            if (currentMapInputId && currentSelectedAddress) {
+                document.getElementById(currentMapInputId).value = currentSelectedAddress;
+                bootstrap.Modal.getInstance(document.getElementById('mapPickerModal')).hide();
+            }
+        });
+    }
 });

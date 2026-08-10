@@ -39,8 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="small text-muted">${b.phone}</div>
                 </td>
                 <td>
-                    <div class="text-white small">Pick: ${b.pickup}</div>
-                    <div class="text-white small">Drop: ${b.drop}</div>
+                    <div class="text-white small">Pick: ${b.pickup && b.pickup.startsWith('Live GPS:') ? `<a href="${b.pickup.replace('Live GPS:', '').trim()}" target="_blank" class="btn btn-sm btn-gold-outline py-0 px-2 mt-1"><i class="fa-solid fa-location-dot"></i> Live Location</a>` : b.pickup}</div>
+                    <div class="text-white small mt-1">Drop: ${b.drop && b.drop.startsWith('Live GPS:') ? `<a href="${b.drop.replace('Live GPS:', '').trim()}" target="_blank" class="btn btn-sm btn-gold-outline py-0 px-2 mt-1"><i class="fa-solid fa-location-dot"></i> Live Location</a>` : b.drop}</div>
                 </td>
                 <td class="text-white">${b.date}<br><span class="small text-muted">${b.time}</span></td>
                 <td class="text-gold">${b.vehicle}</td>
@@ -84,8 +84,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!calendarEl || typeof FullCalendar === 'undefined') return;
         
         const events = globalBookings.filter(b => b.status && b.status.startsWith('Approved')).map(b => {
+            let shortVehicle = b.vehicle;
+            const vLower = b.vehicle.toLowerCase();
+            if (vLower.includes('hycross')) shortVehicle = 'HC';
+            else if (vLower.includes('crysta')) shortVehicle = 'IC';
+            else if (vLower.includes('dzire')) shortVehicle = 'SD';
+            else if (vLower.includes('ertiga')) shortVehicle = 'ER';
+            else if (vLower.includes('traveller')) shortVehicle = 'TT';
+            else shortVehicle = b.vehicle.substring(0, 2).toUpperCase();
+
             return {
-                title: `${b.vehicle} - ${b.name} (${b.cost ? '₹'+b.cost : ''})`,
+                title: `${shortVehicle} - ${b.name.split(' ')[0]}`,
                 start: `${b.date}T${b.time}`,
                 allDay: false,
                 color: '#d4af37' // gold
@@ -103,7 +112,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,timeGridDay'
             },
-            events: events
+            events: events,
+            eventClick: function(info) {
+                // Scroll down to the bookings table
+                document.getElementById('adminBookingsList').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         });
 
         calendar.render();
