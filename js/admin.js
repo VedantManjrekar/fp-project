@@ -124,7 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Subscribe to Supabase auth to show/hide admin content dynamically
     supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (session && session.user.email === 'tanmaymotukuri05@gmail.com') {
+        const adminEmails = ['tanmaymotukuri05@gmail.com', 'mjmanjrekarvedant@gmail.com'];
+        if (session && adminEmails.includes(session.user.email)) {
             if (adminContent) adminContent.classList.remove('d-none');
             if (adminLoginPrompt) adminLoginPrompt.classList.add('d-none');
             
