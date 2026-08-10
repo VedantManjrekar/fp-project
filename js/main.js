@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (error) alert("Login Error: " + error.message);
             };
 
-            document.getElementById('btnUserLogin').onclick = () => handleGoogleLogin('http://localhost:52793');
+            document.getElementById('btnUserLogin').onclick = () => handleGoogleLogin('http://localhost:53827');
             document.getElementById('btnAdminLogin').onclick = () => handleGoogleLogin('http://localhost:3000');
         }
         
@@ -541,10 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (document.getElementById('userBookingsList')) {
                 loadUserBookings(authUser);
             }
-            // Load admin bookings if on admin
-            if (document.getElementById('adminBookingsList')) {
-                loadAdminBookings(authUser);
-            }
+            // Admin bookings are handled in admin.js
 
             // Show secure content
             if (document.getElementById('dashboardContent')) {
@@ -610,47 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    async function loadAdminBookings(user) {
-        const list = document.getElementById('adminBookingsList');
-        if (!list) return;
 
-        const { data, error } = await supabaseClient
-            .from('bookings')
-            .select('*')
-            .order('created_at', { ascending: false });
-
-        if (error || !data || data.length === 0) {
-            list.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No bookings found or table missing.</td></tr>';
-            return;
-        }
-
-        list.innerHTML = '';
-        data.forEach(booking => {
-            list.innerHTML += `
-                <tr>
-                    <td class="text-muted small">#${booking.id}</td>
-                    <td class="text-white">${booking.customer_name}<br><small class="text-muted">${booking.phone}</small></td>
-                    <td class="text-muted">${booking.pickup_location} ➔ ${booking.drop_location}</td>
-                    <td class="text-white">${booking.travel_date} <small class="text-muted">${booking.travel_time}</small></td>
-                    <td class="text-white">${booking.vehicle_preferred}</td>
-                    <td><span class="badge ${booking.status === 'Confirmed' ? 'bg-success' : 'bg-warning text-dark'}">${booking.status || 'Pending'}</span></td>
-                    <td><button class="btn btn-outline-gold btn-sm" onclick="confirmBooking(${booking.id})">Confirm</button></td>
-                </tr>
-            `;
-        });
-    }
-
-    window.confirmBooking = async function(id) {
-        if (!confirm('Mark booking as confirmed?')) return;
-        const { error } = await supabaseClient.from('bookings').update({ status: 'Confirmed' }).eq('id', id);
-        if (!error) {
-            alert('Booking Confirmed!');
-            const list = document.getElementById('adminBookingsList');
-            if (list && authUser) loadAdminBookings(authUser);
-        } else {
-            alert('Error updating booking: ' + error.message);
-        }
-    };
 
     // Booking Form Submission Logic
     const bookingForm = document.getElementById('bookingForm');

@@ -1,21 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const isAdmin = localStorage.getItem('isAdmin') === 'true';
-
     const adminContent = document.getElementById('adminContent');
     const adminLoginPrompt = document.getElementById('adminLoginPrompt');
     const tbody = document.getElementById('adminBookingsList');
     const calendarEl = document.getElementById('adminCalendar');
 
     let calendar;
-
-    if (!isAdmin) {
-        if (adminContent) adminContent.classList.add('d-none');
-        if (adminLoginPrompt) adminLoginPrompt.classList.remove('d-none');
-        return;
-    }
-
-    if (adminContent) adminContent.classList.remove('d-none');
-    if (adminLoginPrompt) adminLoginPrompt.classList.add('d-none');
 
     function loadBookings() {
         const bookings = JSON.parse(localStorage.getItem('ashwamedh_bookings') || '[]');
@@ -125,7 +114,18 @@ document.addEventListener('DOMContentLoaded', () => {
         calendar.render();
     }
 
-    renderTable();
-    // setTimeout to ensure layout is ready before calendar renders
-    setTimeout(renderCalendar, 100);
+    // Subscribe to Supabase auth to show/hide admin content dynamically
+    if (window.supabase) {
+        window.supabase.auth.onAuthStateChange((event, session) => {
+            if (session && session.user.email === 'tanmaymotukuri05@gmail.com') {
+                if (adminContent) adminContent.classList.remove('d-none');
+                if (adminLoginPrompt) adminLoginPrompt.classList.add('d-none');
+                renderTable();
+                setTimeout(renderCalendar, 100);
+            } else {
+                if (adminContent) adminContent.classList.add('d-none');
+                if (adminLoginPrompt) adminLoginPrompt.classList.remove('d-none');
+            }
+        });
+    }
 });
