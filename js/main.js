@@ -57,7 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { data, error } = await supabase.auth.signInWithOAuth({ 
                     provider: 'google',
                     options: {
-                        redirectTo: redirectUrl
+                        redirectTo: redirectUrl,
+                        queryParams: {
+                            prompt: 'select_account'
+                        }
                     }
                 });
                 if (error) alert("Login Error: " + error.message);
