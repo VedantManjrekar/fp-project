@@ -730,3 +730,134 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     background-color: var(--gold-primary);
     color: var(--navy-deep);
 }
+
+/* --- Light Theme Overrides --- */
+:root[data-theme="light"] {
+    --navy-deep: #F3F4F6;
+    --navy-main: #FFFFFF;
+    --navy-card: #F9FAFB;
+    --navy-light: #E5E7EB;
+    --navy-glass: rgba(255, 255, 255, 0.92);
+    
+    --gold-primary: #EA580C;
+    --gold-light: #FDBA74;
+    --gold-dark: #C2410C;
+    --gold-accent: #EA580C;
+    --gold-gradient: linear-gradient(135deg, #FDBA74 0%, #EA580C 50%, #C2410C 100%);
+    --gold-border: rgba(234, 88, 12, 0.35);
+    --gold-glow: 0 0 20px rgba(234, 88, 12, 0.25);
+    
+    --text-main: #111827;
+    --text-muted: #4B5563;
+    --text-gold: #EA580C;
+}
+
+[data-theme="light"] body {
+    background-color: var(--navy-deep);
+    color: var(--text-main);
+}
+
+[data-theme="light"] .text-muted,
+[data-theme="light"] p.text-muted,
+[data-theme="light"] span.text-muted,
+[data-theme="light"] div.text-muted,
+[data-theme="light"] small.text-muted,
+[data-theme="light"] .small.text-muted,
+[data-theme="light"] .x-small.text-muted,
+[data-theme="light"] .table-custom .text-muted {
+    color: #4B5563 !important;
+}
+
+[data-theme="light"] .navbar-brand-text {
+    color: #111827;
+}
+
+[data-theme="light"] .nav-link {
+    color: #4B5563 !important;
+}
+
+[data-theme="light"] .nav-link:hover, 
+[data-theme="light"] .nav-link.active {
+    color: var(--gold-primary) !important;
+    background: rgba(234, 88, 12, 0.1);
+}
+
+[data-theme="light"] .btn-outline-light {
+    color: #4B5563;
+    border-color: #4B5563;
+}
+
+[data-theme="light"] .btn-outline-light:hover {
+    color: #FFFFFF;
+    background-color: #4B5563;
+}
+
+[data-theme="light"] .table-custom th {
+    background: #E5E7EB;
+    color: var(--gold-primary);
+}
+
+[data-theme="light"] .table-custom td {
+    color: var(--text-main);
+}
+
+[data-theme="light"] .fleet-title {
+    color: #111827;
+}
+
+[data-theme="light"] .modal-content-dark {
+    background-color: #FFFFFF;
+    border: 1px solid var(--navy-light);
+    color: var(--text-main);
+}
+
+[data-theme="light"] .modal-header-dark,
+[data-theme="light"] .modal-footer-dark {
+    border-color: var(--navy-light);
+}
+
+[data-theme="light"] .rate-box,
+[data-theme="light"] .service-card,
+[data-theme="light"] .trust-item {
+    background-color: #FFFFFF;
+}
+
+[data-theme="light"] .form-control-dark, 
+[data-theme="light"] .form-select-dark {
+    background-color: #FFFFFF;
+    color: #111827;
+    border-color: var(--gold-border);
+}
+
+[data-theme="light"] .footer-title {
+    color: #111827;
+}
+
+[data-theme="light"] .hero-section {
+    background: linear-gradient(180deg, rgba(243, 244, 246, 0.8) 0%, rgba(243, 244, 246, 0.95) 100%),
+                url('../images/hero-bg.png') no-repeat center center;
+    background-size: cover;
+}
+
+[data-theme="light"] .btn-close-white {
+    filter: invert(1) grayscale(100%) brightness(0);
+}
+
+/* --- Additional Light Theme Fixes --- */
+[data-theme="light"] .text-white,
+[data-theme="light"] h1.text-white,
+[data-theme="light"] h2.text-white,
+[data-theme="light"] h3.text-white,
+[data-theme="light"] h4.text-white,
+[data-theme="light"] h5.text-white,
+[data-theme="light"] h6.text-white {
+    color: #111827 !important;
+}
+
+[data-theme="light"] .text-navy-deep {
+    color: #111827 !important;
+}
+
+[data-theme="light"] .fleet-price-badge {
+    color: #111827 !important;
+}
